@@ -1,0 +1,192 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="row mt-3">
+  <div class="col-8 offset-2">
+    <h3><%= listing.title %></h3>
+  </div>
+  <div class="card col-6 offset-2 listing-card">
+    <img
+      src="<%= listing.image?.url || listing.image %>"
+      class="card-img-top show-img"
+      alt="listing_image"
+    >
+
+    <div class="card-body">
+      <p class="card-text">
+        Owned by
+        <i><%= listing.owner ? listing.owner.username : "Anonymous" %></i>
+      </p>
+      <p class="card-text"><%= listing.description %></p>
+      <p class="card-text">
+        &#8377; <%= listing.price ? listing.price.toLocaleString("en-IN") : "N/A" %>
+      </p>
+      <p class="card-text"><%= listing.location %></p>
+      <p class="card-text"><%= listing.country %></p>
+    </div>
+  </div>
+
+  <% if (currUser && listing.owner &&
+    String(listing.owner._id || listing.owner) === String(currUser._id)) { %>
+
+    <div class="btns d-flex align-items-center gap-3 offset-2 mt-3">
+      <a
+        href="/listings/<%= listing._id %>/edit"
+        class="btn btn-dark edit-btn">
+        Edit
+      </a>
+      <form
+        method="POST"
+        action="/listings/<%= listing._id %>?_method=DELETE"
+        class="m-0">
+        <button class="btn btn-dark">Delete</button>
+      </form>
+    </div>
+
+  <% } %>
+
+  <!-- Review Section -->
+  <div class="col-8 offset-2 mb-3">
+    <hr />
+    <% if (currUser) { %>
+    <h4>Leave a Review</h4>
+    <form
+        action="/listings/<%= listing._id %>/reviews"
+        method="POST"
+        novalidate
+        class="needs-validation">
+
+      <div class="mb-3 mt-3">
+        <label for="rating" class="form-label">Rating</label>
+        <fieldset class="star-rating">
+     
+
+         <input type="radio" id="first-rate5" name="review[rating]" value="5" required />
+         <label for="first-rate5" title="Amazing">★</label>
+
+         <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+         <label for="first-rate4" title="Very good">★</label>
+
+         <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+         <label for="first-rate3" title="Average">★</label>
+
+         <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+         <label for="first-rate2" title="Not good">★</label>
+
+         <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+         <label for="first-rate1" title="Terrible">★</label>
+       </fieldset>
+       </div>
+       <div class="mb-3 mt-3">
+          <label for="comment" class="form-label">
+            Comments
+          </label>
+
+          <textarea
+            name="review[comment]"
+            id="comment"
+            cols="30"
+            rows="5"
+            class="form-control"
+            required
+          ></textarea>
+
+          <div class="invalid-feedback">
+            Please add some comments for review
+          </div>
+        </div>
+
+        <button class="btn btn-outline-dark">
+          Submit
+        </button>
+      </form>
+
+    <% } else { %>
+
+      <p>
+        <a href="/login">Login</a> to leave a review.
+      </p>
+
+    <% } %>
+
+    <hr />
+
+    <!-- All Reviews -->
+
+    <% if (listing.reviews && listing.reviews.length > 0) { %>
+
+      <p><b>All Reviews</b></p>
+      <div class="row">
+        <% for (let review of listing.reviews) { %>
+          <div class="card col-5 ms-3 mb-3">
+            <div class="card-body">
+              <h5 class="card-title"><%= review.author ? review.author.username : "User" %></h5>
+              <p class="card-text"><%= review.comment %></p>
+              <p class="review-stars">
+               <%= "★".repeat(Number(review.rating)) %><%= "☆".repeat(5 - Number(review.rating)) %>
+              </p>
+
+              <% if (
+                currUser &&
+                review.author &&
+                String(currUser._id) === String(review.author._id || review.author)
+              ) { %>
+
+                <form
+                  class="mb-3"
+                  method="POST"
+                  action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+                  <button class="btn btn-sm btn-dark">Delete</button>
+                </form>
+
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+  <!-- Map Section -->
+  <% if (listing.geometry && listing.geometry.lat != null) { %>
+  <div class="col-8 offset-2 mb-3">
+    <h3>Where you'll be</h3>
+    <p class="mb-2"><%= listing.location %>, <%= listing.country %></p>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <div id="map" style="height: 400px; border-radius: 1rem; z-index: 0;"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <%
+      const mapData = JSON.stringify({
+        lat: listing.geometry.lat,
+        lng: listing.geometry.lng,
+        title: listing.title,
+        location: listing.location + ", " + listing.country
+      }).replace(/</g, "\\u003c");
+    %>
+    <script>
+      const mapData = <%- mapData %>;
+
+      const map = L.map("map").setView([mapData.lat, mapData.lng], 11);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+
+      const popup = document.createElement("div");
+      const b = document.createElement("b");
+      b.textContent = mapData.title;
+      popup.appendChild(b);
+      popup.appendChild(document.createElement("br"));
+      popup.appendChild(document.createTextNode(mapData.location));
+
+      const redPin = L.divIcon({
+        className: "",
+        iconSize: [32, 42],
+        iconAnchor: [16, 42],
+        popupAnchor: [0, -38],
+        html: '<svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg"><path d="M16 0C7.2 0 0 7.1 0 15.9 0 27.6 16 42 16 42s16-14.4 16-26.1C32 7.1 24.8 0 16 0z" fill="#fe424d"/><circle cx="16" cy="16" r="6" fill="#fff"/></svg>'
+      });
+
+      L.marker([mapData.lat, mapData.lng], { icon: redPin }).addTo(map).bindPopup(popup).openPopup();
+    </script>
+  </div>
+  <% } %>
+</div>

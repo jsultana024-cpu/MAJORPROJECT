@@ -1,0 +1,155 @@
+/* Starability Basic Rating System */
+
+.starability-slot {
+  display: block;
+  position: relative;
+  width: 100%;
+  min-height: 2em;
+  padding: 0;
+  border: none;
+}
+
+.starability-slot > input {
+  position: absolute;
+  margin-right: -100%;
+  opacity: 0;
+}
+
+.starability-slot > label {
+  position: relative;
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  color: transparent;
+  cursor: pointer;
+  background-image: url("starability-images/icons.svg");
+  background-repeat: no-repeat;
+  background-position: 0 0;
+}
+
+.starability-slot > input:focus + label {
+  outline: 1px dotted #999;
+}
+
+.starability-slot > label:before,
+.starability-slot > label:after {
+  display: none;
+}
+
+.starability-slot > input:checked ~ label,
+.starability-slot > input:hover ~ label,
+.starability-slot > input:focus ~ label {
+  background-position: 0 -2em;
+}
+
+.starability-slot:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Starability Basic Styles */
+
+.starability-basic {
+  display: block;
+  position: relative;
+  width: 100%;
+  min-height: 2em;
+  padding: 0;
+  border: none;
+}
+
+.starability-basic > input {
+  position: absolute;
+  margin-right: -100%;
+  opacity: 0;
+}
+
+.starability-basic > label {
+  position: relative;
+  display: inline-block;
+  width: 2em;
+  height: 2em;
+  color: transparent;
+  cursor: pointer;
+  background-image: url("starability-images/icons.svg");
+  background-repeat: no-repeat;
+  background-position: 0 0;
+}
+
+.starability-basic > input:focus + label {
+  outline: 1px dotted #999;
+}
+
+.starability-basic > input:checked ~ label,
+.starability-basic > input:hover ~ label,
+.starability-basic > input:focus ~ label {
+  background-position: 0 -2em;
+}
+
+.starability-basic:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Result Rating Display */
+
+.starability-result {
+  position: relative;
+  display: inline-block;
+  width: 5em;
+  height: 1em;
+  background-image: url("starability-images/icons.svg");
+  background-repeat: repeat-x;
+  background-position: 0 0;
+}
+
+.starability-result[data-rating="0"] {
+  width: 0em;
+}
+
+.starability-result[data-rating="1"] {
+  width: 1em;
+}
+
+.starability-result[data-rating="2"] {
+  width: 2em;
+}
+
+.starability-result[data-rating="3"] {
+  width: 3em;
+}
+
+.starability-result[data-rating="4"] {
+  width: 4em;
+}
+
+.starability-result[data-rating="5"] {
+  width: 5em;
+}
+
+/* Media Query & Transitions */
+
+@media font {
+  .starability-slot > label {
+    display: inline;
+    float: none;
+    width: auto;
+    height: auto;
+    font-size: 2em;
+    color: inherit;
+    background: none;
+  }
+  .starability-slot > label:before,
+  .starability-slot > label:after {
+    display: none;
+  }
+}
+
+.starability-slot > input:checked ~ label,
+.starability-slot > input:hover ~ label,
+.starability-slot > input:focus ~ label {
+  -webkit-transition: background-position 0.7s;
+  transition: background-position 0.7s;
+}
